@@ -25,6 +25,7 @@ namespace SonarQubeOverviewv2.Services
             return false;
         }
 
+
         // 🔴 SonarQube (duplication)
         public void PrintLogs()
         {
