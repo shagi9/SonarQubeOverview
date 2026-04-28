@@ -3,48 +3,84 @@ namespace SonarQubeOverviewv2.Services
     public class ReportService
     {
         // 🔴 SonarQube - Duplicated block #1
-        public void GeneratePdfReport(string title, List<string> items)
+        public double CalculatePdfReportTotal(List<double> prices, int quantity, string currency)
         {
-            Console.WriteLine("=== Report ===");
-            Console.WriteLine($"Title: {title}");
-            Console.WriteLine($"Date: {DateTime.Now}");
-            Console.WriteLine($"Total items: {items.Count}");
-            foreach (var item in items)
+            if (prices == null || prices.Count == 0)
+                throw new ArgumentException("Prices list cannot be empty.", nameof(prices));
+
+            if (quantity <= 0)
+                throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+
+            double subtotal = 0;
+            for (int i = 0; i < prices.Count; i++)
             {
-                Console.WriteLine($" - {item}");
+                if (prices[i] < 0)
+                    throw new ArgumentException($"Price at index {i} cannot be negative.");
+                subtotal += prices[i];
             }
-            Console.WriteLine("=== End ===");
-            Console.WriteLine();
+
+            double tax = subtotal * 0.23;
+            double shipping = quantity > 10 ? 0 : 15.0;
+            double discount = subtotal > 500 ? subtotal * 0.10 : 0;
+            double total = subtotal + tax + shipping - discount;
+
+            Console.WriteLine($"[PDF] Currency: {currency} | Subtotal: {subtotal:F2} | Tax: {tax:F2} | Shipping: {shipping:F2} | Discount: {discount:F2} | Total: {total:F2}");
+
+            return Math.Round(total, 2);
         }
 
-        // 🔴 SonarQube - Duplicated block #2 (same logic copy-pasted)
-        public void GenerateExcelReport(string title, List<string> items)
+        // 🔴 SonarQube - Duplicated block #2 (copy-paste of block #1)
+        public double CalculateExcelReportTotal(List<double> prices, int quantity, string currency)
         {
-            Console.WriteLine("=== Report ===");
-            Console.WriteLine($"Title: {title}");
-            Console.WriteLine($"Date: {DateTime.Now}");
-            Console.WriteLine($"Total items: {items.Count}");
-            foreach (var item in items)
+            if (prices == null || prices.Count == 0)
+                throw new ArgumentException("Prices list cannot be empty.", nameof(prices));
+
+            if (quantity <= 0)
+                throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+
+            double subtotal = 0;
+            for (int i = 0; i < prices.Count; i++)
             {
-                Console.WriteLine($" - {item}");
+                if (prices[i] < 0)
+                    throw new ArgumentException($"Price at index {i} cannot be negative.");
+                subtotal += prices[i];
             }
-            Console.WriteLine("=== End ===");
-            Console.WriteLine();
+
+            double tax = subtotal * 0.23;
+            double shipping = quantity > 10 ? 0 : 15.0;
+            double discount = subtotal > 500 ? subtotal * 0.10 : 0;
+            double total = subtotal + tax + shipping - discount;
+
+            Console.WriteLine($"[Excel] Currency: {currency} | Subtotal: {subtotal:F2} | Tax: {tax:F2} | Shipping: {shipping:F2} | Discount: {discount:F2} | Total: {total:F2}");
+
+            return Math.Round(total, 2);
         }
 
-        // 🔴 SonarQube - Duplicated block #3 (same logic copy-pasted again)
-        public void GenerateCsvReport(string title, List<string> items)
+        // 🔴 SonarQube - Duplicated block #3 (copy-paste of block #1)
+        public double CalculateCsvReportTotal(List<double> prices, int quantity, string currency)
         {
-            Console.WriteLine("=== Report ===");
-            Console.WriteLine($"Title: {title}");
-            Console.WriteLine($"Date: {DateTime.Now}");
-            Console.WriteLine($"Total items: {items.Count}");
-            foreach (var item in items)
+            if (prices == null || prices.Count == 0)
+                throw new ArgumentException("Prices list cannot be empty.", nameof(prices));
+
+            if (quantity <= 0)
+                throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+
+            double subtotal = 0;
+            for (int i = 0; i < prices.Count; i++)
             {
-                Console.WriteLine($" - {item}");
+                if (prices[i] < 0)
+                    throw new ArgumentException($"Price at index {i} cannot be negative.");
+                subtotal += prices[i];
             }
-            Console.WriteLine("=== End ===");
-            Console.WriteLine();
+
+            double tax = subtotal * 0.23;
+            double shipping = quantity > 10 ? 0 : 15.0;
+            double discount = subtotal > 500 ? subtotal * 0.10 : 0;
+            double total = subtotal + tax + shipping - discount;
+
+            Console.WriteLine($"[CSV] Currency: {currency} | Subtotal: {subtotal:F2} | Tax: {tax:F2} | Shipping: {shipping:F2} | Discount: {discount:F2} | Total: {total:F2}");
+
+            return Math.Round(total, 2);
         }
     }
 }

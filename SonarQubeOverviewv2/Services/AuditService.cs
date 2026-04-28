@@ -2,62 +2,58 @@ namespace SonarQubeOverviewv2.Services
 {
     public class AuditService
     {
-        // 🔴 SonarQube - cross-file duplication (same block as ReportService)
-        public void LogAuditPdf(string title, List<string> items)
+        // 🔴 SonarQube - cross-file duplication (identical block to ReportService)
+        public double AuditPdfTotal(List<double> prices, int quantity, string currency)
         {
-            Console.WriteLine("=== Report ===");
-            Console.WriteLine($"Title: {title}");
-            Console.WriteLine($"Date: {DateTime.Now}");
-            Console.WriteLine($"Total items: {items.Count}");
-            foreach (var item in items)
+            if (prices == null || prices.Count == 0)
+                throw new ArgumentException("Prices list cannot be empty.", nameof(prices));
+
+            if (quantity <= 0)
+                throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+
+            double subtotal = 0;
+            for (int i = 0; i < prices.Count; i++)
             {
-                Console.WriteLine($" - {item}");
+                if (prices[i] < 0)
+                    throw new ArgumentException($"Price at index {i} cannot be negative.");
+                subtotal += prices[i];
             }
-            Console.WriteLine("=== End ===");
-            Console.WriteLine();
+
+            double tax = subtotal * 0.23;
+            double shipping = quantity > 10 ? 0 : 15.0;
+            double discount = subtotal > 500 ? subtotal * 0.10 : 0;
+            double total = subtotal + tax + shipping - discount;
+
+            Console.WriteLine($"[AUDIT-PDF] Currency: {currency} | Subtotal: {subtotal:F2} | Tax: {tax:F2} | Shipping: {shipping:F2} | Discount: {discount:F2} | Total: {total:F2}");
+
+            return Math.Round(total, 2);
         }
 
-        // 🔴 SonarQube - cross-file duplication (same block as ReportService)
-        public void LogAuditExcel(string title, List<string> items)
+        // 🔴 SonarQube - cross-file duplication (identical block to ReportService)
+        public double AuditExcelTotal(List<double> prices, int quantity, string currency)
         {
-            Console.WriteLine("=== Report ===");
-            Console.WriteLine($"Title: {title}");
-            Console.WriteLine($"Date: {DateTime.Now}");
-            Console.WriteLine($"Total items: {items.Count}");
-            foreach (var item in items)
+            if (prices == null || prices.Count == 0)
+                throw new ArgumentException("Prices list cannot be empty.", nameof(prices));
+
+            if (quantity <= 0)
+                throw new ArgumentException("Quantity must be greater than zero.", nameof(quantity));
+
+            double subtotal = 0;
+            for (int i = 0; i < prices.Count; i++)
             {
-                Console.WriteLine($" - {item}");
+                if (prices[i] < 0)
+                    throw new ArgumentException($"Price at index {i} cannot be negative.");
+                subtotal += prices[i];
             }
-            Console.WriteLine("=== End ===");
-            Console.WriteLine();
-        }
 
-        public void RecordUserAction(string username, string action)
-        {
-            if (string.IsNullOrWhiteSpace(username))
-                throw new ArgumentException("Username cannot be empty.", nameof(username));
+            double tax = subtotal * 0.23;
+            double shipping = quantity > 10 ? 0 : 15.0;
+            double discount = subtotal > 500 ? subtotal * 0.10 : 0;
+            double total = subtotal + tax + shipping - discount;
 
-            if (string.IsNullOrWhiteSpace(action))
-                throw new ArgumentException("Action cannot be empty.", nameof(action));
+            Console.WriteLine($"[AUDIT-Excel] Currency: {currency} | Subtotal: {subtotal:F2} | Tax: {tax:F2} | Shipping: {shipping:F2} | Discount: {discount:F2} | Total: {total:F2}");
 
-            double amount = 0;
-            double tax = amount * 0.23;
-            double finalAmount = amount + tax;
-            Console.WriteLine($"[AUDIT] User: {username} | Action: {action} | Amount: {finalAmount:F2}");
-        }
-
-        public void RecordSystemEvent(string source, string action)
-        {
-            if (string.IsNullOrWhiteSpace(source))
-                throw new ArgumentException("Source cannot be empty.", nameof(source));
-
-            if (string.IsNullOrWhiteSpace(action))
-                throw new ArgumentException("Action cannot be empty.", nameof(action));
-
-            double amount = 0;
-            double tax = amount * 0.23;
-            double finalAmount = amount + tax;
-            Console.WriteLine($"[SYSTEM] Source: {source} | Action: {action} | Amount: {finalAmount:F2}");
+            return Math.Round(total, 2);
         }
     }
 }
