@@ -2,7 +2,7 @@
 {
     public class BadServiceWithStandardAnalyzers
     {
-        public void NullDereference(List<string>? items)
+        public static void NullDereference(List<string>? items)
         {
             Console.WriteLine(items.Count); // ⚠️ Dereference of a possibly null reference
         }
@@ -11,6 +11,5 @@
         {
             int x = 42; // ⚠️ The variable 'x' is assigned but its value is never used
         }
-
     }
 }

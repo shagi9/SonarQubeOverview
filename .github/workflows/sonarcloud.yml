@@ -1,5 +1,7 @@
 name: SonarCloud Analysis
 
+# Triggers automatically on every push or pull request to the main branch.
+# This ensures every code change is analyzed without manual intervention.
 on:
   push:
     branches:
@@ -14,26 +16,56 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # Checks out the full git history (fetch-depth: 0).
+      # SonarCloud needs the complete history to calculate blame info,
+      # detect new vs existing issues, and correctly analyze pull requests.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # Installs the .NET 9 SDK on the GitHub Actions runner.
+      # Required to build the project and run tests in the pipeline.
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
 
+      # Downloads and installs the SonarCloud scanner CLI globally.
+      # The scanner is not pre-installed on GitHub runners — it must be added each run.
       - name: Install SonarCloud scanner
         run: dotnet tool install --global dotnet-sonarscanner
 
+      # Opens an analysis session and configures the scanner with:
+      #   /k  — unique Project Key that identifies this project on SonarCloud
+      #   /o  — Organization Key that owns the project on SonarCloud
+      #   /d:sonar.host.url       — target SonarCloud server URL
+      #   /d:sonar.token          — secret token to authenticate the upload
+      #   /d:sonar.cs.opencover.reportsPaths — tells the scanner where to find
+      #                             the test coverage XML file generated in the next steps.
+      # All sensitive values are stored as GitHub Secrets — never hardcoded.
       - name: Begin SonarCloud analysis
         run: dotnet sonarscanner begin /k:"${{ secrets.SONAR_PROJECT_KEY }}" /o:"${{ secrets.SONAR_ORG }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.opencover.reportsPaths="**/coverage.opencover.xml"
 
+      # Builds the solution without incremental compilation.
+      # The scanner hooks into MSBuild here to collect:
+      #   - Roslyn analyzer results (bugs, code smells, vulnerabilities)
+      #   - Source file list for duplication detection
       - name: Build
         run: dotnet build --no-incremental
 
+      # Runs all xUnit tests and collects code coverage using coverlet.
+      # --collect:"XPlat Code Coverage" activates the coverlet collector
+      # that is already referenced in the test project (.csproj).
+      # Format=opencover generates coverage.opencover.xml which SonarCloud
+      # uses to calculate the Coverage % shown on the dashboard.
+      # Without this step, Coverage stays 0% on SonarCloud.
       - name: Run tests with coverage
         run: dotnet test --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
+      # Closes the analysis session and uploads all collected data to SonarCloud:
+      #   - Bugs, vulnerabilities, code smells (from Roslyn + SonarCloud rules)
+      #   - Code coverage percentage (from opencover XML)
+      #   - Duplications (from token-based CPD engine)
+      # Nothing is sent to SonarCloud until this step runs.
       - name: End SonarCloud analysis
         run: dotnet sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
